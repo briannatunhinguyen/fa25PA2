@@ -23,10 +23,11 @@ void generateCodes(int root, string codes[]);
 void encodeMessage(const string& filename, string codes[]);
 
 int main() {
-    int freq[26] = {0};
+    int freq[26] = {0}; //freq[26] stores normalized letter counts
 
     // Step 1: Read file and count letter frequencies
     buildFrequencyTable(freq, "input.txt");
+
 
     // Step 2: Create leaf nodes for each character with nonzero frequency
     int nextFree = createLeafNodes(freq);
@@ -48,7 +49,7 @@ int main() {
     Function Definitions (Students will complete logic)
   ------------------------------------------------------*/
 
-// Step 1: Read file and count frequencies
+// Step 1: Read file and count frequencies (do not change or edit)
 void buildFrequencyTable(int freq[], const string& filename) {
     ifstream file(filename);
     if (!file.is_open()) {
@@ -71,12 +72,12 @@ void buildFrequencyTable(int freq[], const string& filename) {
     cout << "Frequency table built successfully.\n";
 }
 
-// Step 2: Create leaf nodes for each character
-int createLeafNodes(int freq[]) {
+// Step 2: Create leaf nodes for each character (do not change or edit)
+int createLeafNodes(int freq[]) { //demonstrates how characters with nonzero frequency are converted into nodes
     int nextFree = 0;
     for (int i = 0; i < 26; ++i) {
-        if (freq[i] > 0) {
-            charArr[nextFree] = 'a' + i;
+        if (freq[i] > 0) { //if a letter is repeated
+            charArr[nextFree] = 'a' + i; //automatically assigns letters in chronological order ('a' = 97 in ascii)
             weightArr[nextFree] = freq[i];
             leftArr[nextFree] = -1;
             rightArr[nextFree] = -1;
@@ -90,20 +91,28 @@ int createLeafNodes(int freq[]) {
 // Step 3: Build the encoding tree using heap operations
 int buildEncodingTree(int nextFree) {
     // TODO:
-    // 1. Create a MinHeap object.
-    // 2. Push all leaf node indices into the heap.
-    // 3. While the heap size is greater than 1:
-    //    - Pop two smallest nodes
-    //    - Create a new parent node with combined weight
-    //    - Set left/right pointers
-    //    - Push new parent index back into the heap
-    // 4. Return the index of the last remaining node (root)
-    return -1; // placeholder
-}
+      MinHeap heap; // 1. Create a MinHeap object.
+    for (int i = 0; i < nextFree; ++i) { // 2. Push all leaf node indices into the heap.
+        heap.push(i, weightArr);
+    }
+   while (heap.size > 1) {   // 3. While the heap size is greater than 1:
+       int lindex = heap.pop(weightArr);   //    - Pop two smallest nodes
+       int rindex = heap.pop(weightArr);   //    - Pop two smallest nodes
+       int parent = nextFree++;   //    - Create a new parent node with combined weight
+       weightArr[parent] = (weightArr[lindex] + weightArr[rindex]); //use weightArr to retrieve weight from indices
+       leftArr[parent] = lindex;  //    - Set left/right pointers
+       rightArr[parent] = rindex;  //    - Set left/right pointers
+       heap.push(parent, weightArr);  //    - Push new parent index back into the heap
+   }
+    int root = heap.pop(weightArr);  // 4. Return the index of the last remaining node (root)
+    return root;
+   }
+
 
 // Step 4: Use an STL stack to generate codes
 void generateCodes(int root, string codes[]) {
     // TODO:
+    stack<pair<int, string>> stack; //stack = node index, code path
     // Use stack<pair<int, string>> to simulate DFS traversal.
     // Left edge adds '0', right edge adds '1'.
     // Record code when a leaf node is reached.
