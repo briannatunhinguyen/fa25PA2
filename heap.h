@@ -15,7 +15,7 @@ struct MinHeap {
     int data[64]; //an array that can hold 64 int values representing indices
     int size; //total number of nodes in data[], updated as program runs
 
-    MinHeap() { size = 0; } //constructor
+    MinHeap() { size = 0; } //constructor size = 0
 
     void push(int idx, int weightArr[]) {
         // TODO: insert index at end of heap, restore order using upheap()

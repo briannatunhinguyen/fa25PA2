@@ -68,7 +68,6 @@ void buildFrequencyTable(int freq[], const string& filename) {
             freq[ch - 'a']++;
     }
     file.close();
-
     cout << "Frequency table built successfully.\n";
 }
 
