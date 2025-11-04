@@ -91,70 +91,86 @@ int createLeafNodes(int freq[]) { //demonstrates how characters with nonzero fre
 // Step 3: Build the encoding tree using heap operations
 int buildEncodingTree(int nextFree) {
     // TODO:
-      MinHeap heap; // 1. Create a MinHeap object.
+    MinHeap heap; // 1. Create a MinHeap object.
     for (int i = 0; i < nextFree; ++i) { // 2. Push all leaf node indices into the heap.
         heap.push(i, weightArr);
     }
-   while (heap.size > 1) {   // 3. While the heap size is greater than 1:
-       int lindex = heap.pop(weightArr);   //    - Pop two smallest nodes
-       int rindex = heap.pop(weightArr);   //    - Pop two smallest nodes
-       int parent = nextFree++;   //    - Create a new parent node with combined weight
-       weightArr[parent] = (weightArr[lindex] + weightArr[rindex]); //use weightArr to retrieve weight from indices
-       leftArr[parent] = lindex;  //    - Set left/right pointers
-       rightArr[parent] = rindex;  //    - Set left/right pointers
-       heap.push(parent, weightArr);  //    - Push new parent index back into the heap
-   }
-    int root = heap.pop(weightArr);  // 4. Return the index of the last remaining node (root)
-    return root;
-   }
+    if (heap.size == 0) return -1;
+    while (heap.size > 1) {   // 3. While the heap size is greater than 1:
+        int lindex = heap.pop(weightArr);   //    - Pop two smallest nodes
+        int rindex = heap.pop(weightArr);   //    - Pop two smallest nodes
+        int parent = nextFree;//    - Create a new parent node with combined weight
+        nextFree++;
+        charArr[parent] = '\0';
+        leftArr[parent] = lindex;  //    - Set left/right pointers
+        rightArr[parent] = rindex;  //    - Set left/right pointers
+        weightArr[parent] = weightArr[lindex] + weightArr[rindex];
+        heap.push(parent, weightArr);  //    - Push new parent index back into the heap
+    }
+    return heap.data[0]; // 4. Return the index of the last remaining node (root)
+}
 
+    // Step 4: Use an STL stack to generate codes
+    void generateCodes(int root, string codes[]) {
+    if (root == -1) return;
+    if (leftArr[root] == -1 && rightArr[root] == -1) {
+        if (charArr[root] >= 'a' && charArr[root] <= 'z') {
+            codes[charArr[root] - 'a'] = "0";
+        }
+        return;
+    }
 
-// Step 4: Use an STL stack to generate codes
-void generateCodes(int root, string codes[]) {
-    if (root < 0) return;
-    // TODO:
     stack<pair<int, string>> s; //stack = node index, code path // Use stack<pair<int, string>> to simulate DFS traversal.
-
-    s.push({root, ""}); //adds the root node to the stack with no 0s or 1s read
+    s.push(pair<int, string>(root, "")); //adds the root node to the stack with no 0s or 1s read
     while (!s.empty()) { //while the stack is not empty, safety
-        int idx = s.top().first; //separates the pair into index int and string for binary
-        string code = s.top().second; //s.top() reads but does not remove
-        s.pop();
+        pair<int, string> pair = s.top(); //separates the pair into index int and string for binary
+        s.pop(); //s.top() reads but does not remove
+        int node = pair.first;
+        string binary = pair.second;
 
-        int left = leftArr[idx]; //index of left child
-        int right = rightArr[idx]; //index of right child
+        int left = leftArr[node]; //index of left child
+        int right = rightArr[node]; //index of right child
 
         // Record code when a leaf node is reached.
         if (left == -1 && right == -1) { //if a leaf node is found
-            for (int i = 0; i < 26; ++i) {
-                codes[] = code;
+            if (charArr[node] >= 'a' and charArr[node] <= 'z') {
+                if (binary.empty()) {
+                    codes[charArr[node] - 'a'] = "0";
+                }
+                else {
+                    codes[charArr[node] - 'a'] = binary;
+                }
             }
         }
         else {
-            if (rightArr[root] != -1) s.push({leftArr[root], code + "0"});
-            if (leftArr[root] != -1) s.push({leftArr[root], code + "1"} );    // Left edge adds '0', right edge adds '1'.
+            if (right!= -1) {
+                s.push(std::pair<int, std::string>(right, binary + "1"));
+            }
+            if (left != -1) {
+                s.push(std::pair<int, std::string>(left, binary + "0"));
+                //Left edge adds '0', right edge adds '1'.
+            }
         }
     }
 }
+    // Step 5: Print table and encoded message
+    void encodeMessage(const string& filename, string codes[]) {
+        cout << "\nCharacter : Code\n";
+        for (int i = 0; i < 26; ++i) {
+            if (!codes[i].empty())
+                cout << char('a' + i) << " : " << codes[i] << "\n";
+        }
 
-// Step 5: Print table and encoded message
-void encodeMessage(const string& filename, string codes[]) {
-    cout << "\nCharacter : Code\n";
-    for (int i = 0; i < 26; ++i) {
-        if (!codes[i].empty())
-            cout << char('a' + i) << " : " << codes[i] << "\n";
+        cout << "\nEncoded message:\n";
+
+        ifstream file(filename);
+        char ch;
+        while (file.get(ch)) {
+            if (ch >= 'A' && ch <= 'Z')
+                ch = ch - 'A' + 'a';
+            if (ch >= 'a' && ch <= 'z')
+                cout << codes[ch - 'a'];
+        }
+        cout << "\n";
+        file.close();
     }
-
-    cout << "\nEncoded message:\n";
-
-    ifstream file(filename);
-    char ch;
-    while (file.get(ch)) {
-        if (ch >= 'A' && ch <= 'Z')
-            ch = ch - 'A' + 'a';
-        if (ch >= 'a' && ch <= 'z')
-            cout << codes[ch - 'a'];
-    }
-    cout << "\n";
-    file.close();
-}
